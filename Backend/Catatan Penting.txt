@@ -1,0 +1,15 @@
+app.get('/id/:nama', function(req, res){
+   res.send('Request ID '+req.params.nama);
+   })
+   // GET dynamic request w/ parameter nama
+
+penjelasan yang diatas merupakan parameter yang wajib
+
+
+
+app.get('/id/:nama?', function(req, res){
+   res.send('Request ID '+req.params.nama);
+   })
+   // GET dynamic request w/ parameter nama
+
+penjelasan yang diatas merupakan parameter yang tidak wajib
