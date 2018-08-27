@@ -1,1 +1,0 @@
-harus membuka session dl yang terdapat variable tersebut baru membuka yang selanjutnya supaya bisa di tarik

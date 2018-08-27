@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
-import {BrowserRouter,Route } from 'react-router-dom'
+import { Route } from 'react-router-dom'
 
 import Home from './component/Home';
 import About from './component/About';
@@ -23,6 +23,7 @@ import Customeraddresses from './component/Customeraddresses';
 import Customeraddressesedit from './component/Customeraddressesedit';
 import Customerlogin from './component/Customerlogin';
 import Post from './component/Post';
+import payment from './component/payment';
 import Customerregister from './component/Customerregister';
 
 
@@ -33,7 +34,7 @@ class App extends Component {
   render() {
     return (
       <div> 
-      <Route  exact path="/" component={Home}/> 
+      <Route exact path="/" component={Home}/> 
       <Route path="/about" component={About}/>  
       <Route path="/category" component={Category}/>  
       <Route path="/contact" component={Contact}/>  
@@ -53,6 +54,7 @@ class App extends Component {
       <Route path="/customeraddressesedit" component={Customeraddressesedit}/>  
       <Route path="/customerlogin" component={Customerlogin}/>  
       <Route path="/post" component={Post}/>  
+      <Route path="/payment" component={payment}/>  
       <Route path="/Customerregister" component={Customerregister}/>  
      </div>
     );

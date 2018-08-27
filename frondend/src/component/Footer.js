@@ -1,10 +1,30 @@
 import React, { Component } from 'react';
 import '../App.css';
 import {Link} from 'react-router-dom'
+import axios from "axios";
 
 class Footer extends Component {
 
+  state = {
+    content_phone:"",
+    content_money:"",
+    content_shipping:"",
+  }
+
+  componentDidMount(){
+    axios.get("http://localhost:3002/fronthome")
+    .then((response)=>{
+      if(response.data !== undefined){
+        this.setState({content_phone:response.data[0].content_phone})
+        this.setState({content_shipping:response.data[0].content_shipping})
+        this.setState({content_money:response.data[0].content_money})
+      }
+    })
+  }
+
+
   render() {
+
     return (
       <div className="App">
     {/* <!-- Footer--> */}
@@ -19,7 +39,7 @@ class Footer extends Component {
               <div className="item d-flex align-items-center">
                 <div className="icon"><i className="fas fa-truck "></i></div>
                 <div className="text">
-                  <h6 className="no-margin text-uppercase">Free shipping &amp; return</h6><p>Free Shipping over $300</p>
+                  <h6 className="no-margin text-uppercase">Free shipping &amp; return</h6><p>{this.state.content_shipping}</p>
                 </div>
               </div>
             </div>
@@ -29,7 +49,7 @@ class Footer extends Component {
               <div className="item d-flex align-items-center">
                 <div className="icon"><i className="fas fa-money-bill-alt "></i></div>
                 <div className="text">
-                  <h6 className="no-margin text-uppercase">Money back guarantee</h6><p>30 Days Money Back Guarantee</p>
+                  <h6 className="no-margin text-uppercase">Money back guarantee</h6><p>{this.state.content_money}</p>
                 </div>
               </div>
             </div>
@@ -40,7 +60,7 @@ class Footer extends Component {
               <div className="item d-flex align-items-center">
                 <div className="icon"><i className="fas fa-headphones "></i></div>
                 <div className="text">
-                  <h6 className="no-margin text-uppercase">020-800-456-747</h6><p>24/7 Available Support</p>
+                  <h6 className="no-margin text-uppercase">{this.state.content_phone}</h6><p>24/7 Available Support</p>
                 </div>
               </div>
             </div>
@@ -56,15 +76,15 @@ class Footer extends Component {
               <div className="logo"><img src={"img/burunglogo.png"} alt="..."/></div>
               <p>Lorem ipsum dolor sit amet, consectetur adipisicing.</p>
               <ul className="social-menu list-inline">
-                <li className="list-inline-item"><a href="#" target="_blank" title="twitter">
+                <li className="list-inline-item"><a target="_blank" title="twitter">
                   <i className="fab fa-twitter"></i></a></li>
-                <li className="list-inline-item"><a href="#" target="_blank" title="facebook">
+                <li className="list-inline-item"><a target="_blank" title="facebook">
                   <i className="fab fa-facebook"></i></a></li>
-                <li className="list-inline-item"><a href="#" target="_blank" title="instagram">
+                <li className="list-inline-item"><a target="_blank" title="instagram">
                   <i className="fab fa-instagram"></i></a></li>
-                <li className="list-inline-item"><a href="#" target="_blank" title="pinterest">
+                <li className="list-inline-item"><a target="_blank" title="pinterest">
                   <i className="fab fa-pinterest"></i></a></li>
-                <li className="list-inline-item"><a href="#" target="_blank" title="vimeo">
+                <li className="list-inline-item"><a target="_blank" title="vimeo">
                   <i className="fab fa-vimeo"></i></a></li>
               </ul>
             </div>
@@ -72,9 +92,9 @@ class Footer extends Component {
               <div className="site-links col-lg-2 col-md-6">
               <h5 className="text-uppercase">Shop</h5>
               <ul className="list-unstyled">
-                <li> <a href="#">Dried Bird's Nest </a></li>
-                <li> <a href="#">Bottled Bird's Nest</a></li>
-                <li> <a href="#">Brid's Gifts</a></li>
+                <li> <a>Dried Bird's Nest </a></li>
+                <li> <a>Bottled Bird's Nest</a></li>
+                <li> <a>Brid's Gifts</a></li>
                 <li> <Link to="/blog">Our Blog</Link></li>
                 <li> <Link to="/category">Shop</Link></li>
               </ul>
@@ -84,9 +104,8 @@ class Footer extends Component {
               <ul className="list-unstyled">
                 <li> <Link to="/customerlogin">Login</Link></li>
                 <li> <Link to="/customerlogin">Register</Link></li>
-                <li> <a href="#">Wishlist</a></li>
+                <li> <a>Wishlist</a></li>
                 <li> <Link to="/category">Our Products</Link></li>
-                <li> <Link to="/checkout1">Checkouts</Link></li>
               </ul>
             </div>
 
@@ -94,12 +113,6 @@ class Footer extends Component {
             <div className="newsletter col-lg-4">
               <h5 className="text-uppercase">Daily Offers & Discounts</h5>
               <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit. At itaque temporibus.</p>
-              <form action="#" id="newsletter-form">
-                <div className="form-group">
-                  <input type="email" name="subscribermail" placeholder="Your Email Address"/>
-                  <button type="submit"> <i className="fas fa-paper-plane"></i></button>
-                </div>
-              </form>
             </div>
            </div>
         </div>
@@ -111,7 +124,7 @@ class Footer extends Component {
         <div className="container">
           <div className="row d-flex align-items-center">
             <div className="col-lg-12">
-              <p style={{color:"white"}}> 2018 ade putra.</p>
+              <p style={{color:"white"}}> 2018 高兴鸟 Premium Birdnest.</p>
             </div>
               </div>
             </div>

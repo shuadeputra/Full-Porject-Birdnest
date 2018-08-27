@@ -1,18 +1,13 @@
 import React, { Component } from 'react';
 import Navbaradmin from './Navbaradmin';
 import Contenthome from './Contenthome';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 
-
-// Mengirim funtion yang dapat dari redux
-function mapStateToProps(state) {
-  return {
-      login: state.login,
-      username: state.username,
-    };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
 
 class Homeadmin extends Component {
   state = {
@@ -21,30 +16,24 @@ class Homeadmin extends Component {
 
   render() {
 
-    // console.log(this.props.login)
-  
-  // Mengecek apakah passwod sudah dan username uda benar?
-  if(this.props.login != 1){
-    {this.state.redirect= true}  
-    this.props.dispatch({type:'login', value:"Username /Password anda salah"});    
-  }
-
-  // Mengirm redirect jika pass dan user bukan dapat value 1
-    if (this.state.redirect) {
-      return <Redirect to='/'/>
-      
+    if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+      cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+      this.setState({ redirect: true })
     }
 
-
+    // Mengirm redirect jika pass dan user bukan dapat value 1
+    if (this.state.redirect) {
+      return <Redirect to='/' />
+    }
 
     return (
-  <div>
-      <Navbaradmin Homeadmin="active"/>
-      <Contenthome/>
+      <div>
+        <Navbaradmin Homeadmin="active" />
+        <Contenthome />
 
-    </div>
+      </div>
     );
   }
 }
 
-export default connect(mapStateToProps)(Homeadmin);
+export default Homeadmin;

@@ -1,24 +1,21 @@
 import React, { Component } from 'react';
-import {Link} from 'react-router-dom'
+// import {Link} from 'react-router-dom'
 import Navbaradmin from './Navbaradmin';
 import axios from 'axios';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 
-// Mengirim funtion yang dapat dari redux
-function mapStateToProps(state) {
-  return {
-      login: state.login,
-      username: state.username
-    };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
 
 class Aboutus extends Component {
 
   state ={
     dataKu: [],
-    redirect: false
+    redirect: false,
+    next:""
   }
 
   componentDidMount() {
@@ -39,16 +36,27 @@ class Aboutus extends Component {
         we_care: obj.we_care.value,
         fast_delivery: obj.fast_delivery.value, 
         your_security: obj.your_security.value
-    })
+    }).then((ambilData) => {
+      if(ambilData.data === "berhasil"){
+        this.setState({next: 1})
+        this.setState({ redirect: true })
+      }
+   })
   }
 
   render() {
 
   // Mengecek apakah passwod sudah dan username uda benar?
-  if(this.props.login != 1){
-    {this.state.redirect= true}  
-    this.props.dispatch({type:'login', value:"Username /Password anda salah"});    
+  if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+    cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+    this.setState({ redirect: true })
   }
+  
+    // pindah ke page yang ditujui
+    if (this.state.redirect && this.state.next === 1) {
+      return <Redirect to="/homeadmin" />
+    }
+  
 
   // Mengirm redirect jika pass dan user bukan dapat value 1
     if (this.state.redirect) {
@@ -64,55 +72,45 @@ class Aboutus extends Component {
       var we_care = item.we_care; 
       var fast_delivery = item.fast_delivery; 
       var your_security = item.your_security; 
-      return(
-        <div className="col-md-12">
-          <div className="tile">
-            <h3 className="tile-title">About us</h3>
-            <div className="tile-body">
-              <form className="row">
-                <div className="form-group col-md-12">
-                  <label className="control-label"> How it all began</label>
-                  <textarea id="electronic" ref="how_it_all_began" rows="3" className="form-control" key={index}>
-                        {how_it_all_began}
-                  </textarea>
-                </div>
-                <div className="form-group col-md-12">
-                  <label className="control-label fa fa-user"> Who we are</label>
-                  <textarea id="electronic" ref="who_we_are" rows="3" className="form-control" key={index}>
-                      {who_we_are}
-                  </textarea>
-                </div>
-                <div className="form-group col-md-12">
-                  <label className="control-label fa fa-heart"> We care </label>
-                  <textarea id="electronic" ref="we_care" rows="3" className="form-control" 
-                  key={index}>
-                          {we_care}
-                  </textarea>
-                </div>
-                <div className="form-group col-md-12">
-                  <label className="control-label fa fa-truck"> Fast delivery</label>
-                  <textarea id="electronic" ref="fast_delivery" rows="3" className="form-control" key={index}>
-                        {fast_delivery}
-                  </textarea>
-                </div>
-                <div className="form-group col-md-12">
-                  <label className="control-label fa fa-shield"> Your security and privacy matters </label>
-                  <textarea id="electronic" ref="your_security" rows="3" className="form-control">
-                        {your_security}
-                  </textarea>
-                </div>
-                
-                <input hidden key={index} ref="id" type="text" value={id}/>
+      return <div key={index} className="col-md-12">
+        <div className="tile">
+          <h3 className="tile-title">About us</h3>
+          <div className="tile-body">
+              <div className="form-group col-md-12">
+                <label className="control-label"> How it all began</label>
+                <textarea id="electronic" defaultValue={how_it_all_began} ref="how_it_all_began" rows="3" className="form-control">
+                </textarea>
+              </div>
+              <div className="form-group col-md-12">
+                <label className="control-label fa fa-user"> Who we are</label>
+                <textarea id="electronic" defaultValue={who_we_are} ref="who_we_are" rows="3" className="form-control">
+                </textarea>
+              </div>
+              <div className="form-group col-md-12">
+                <label className="control-label fa fa-heart"> We care </label>
+                <textarea id="electronic" defaultValue={we_care} ref="we_care" rows="3" className="form-control"
+                >
+                </textarea>
+              </div>
+              <div className="form-group col-md-12">
+                <label className="control-label fa fa-truck"> Fast delivery</label>
+                <textarea id="electronic" defaultValue={fast_delivery} ref="fast_delivery" rows="3" className="form-control">
+                </textarea>
+              </div>
+              <div className="form-group col-md-12">
+                <label className="control-label fa fa-shield"> Your security and privacy matters </label>
+                <textarea id="electronic" defaultValue={your_security} ref="your_security" rows="3" className="form-control">
+                </textarea>
+              </div>
 
-                <div className="form-group col-md-4 align-self-end">
-                <Link onClick={() => this.updateaboutus(this.refs)} type="submit" to="/homeadmin" className="btn btn-primary" type="button"><i className="fa fa-fw fa-lg fa-save"></i>Save change</Link>
-                
-                </div>
-              </form>
-            </div>
+              <input hidden ref="id" type="text" defaultValue={id} />
+
+              <div className="form-group col-md-4 align-self-end">
+                <button onClick={() => this.updateaboutus(this.refs)} type="submit" className="btn btn-primary"><i className="fa fa-fw fa-lg fa-save"></i>Save change</button>
+              </div>
           </div>
         </div>
-      )
+      </div>
     })
 
     return (
@@ -144,4 +142,4 @@ class Aboutus extends Component {
   }
 }
 
-export default connect(mapStateToProps)(Aboutus);
+export default Aboutus;

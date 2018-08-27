@@ -1,22 +1,27 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router-dom';
 import { Collapse } from 'reactstrap';
-import { connect } from 'react-redux';
+import Cookies from 'universal-cookie';
+import axios from 'axios';
 
-
-function mapStateToProps(state) {
-  return {
-      login: state.login,
-      username: state.username
-    };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
 
 
 class Navbaradmin extends Component {
   constructor(props) {
     super(props);
     this.toggle = this.toggle.bind(this);
-    this.state = { collapse: true };
+    this.state = { 
+      collapse: true,
+      fullname:"",
+      skils:"",
+      image_profile:"",
+      hasil:[],
+      read:"",
+      email:"",
+    };
   }
 
   toggle() {
@@ -24,10 +29,60 @@ class Navbaradmin extends Component {
   }
 
   logut(){
-    this.props.dispatch({type:'logout',},);
+    // this.props.dispatch({type:'logout',},);
+    cookies.remove('login')
+    cookies.remove('username')
   } 
 
+
+  componentDidMount(){
+    axios.post('http://localhost:3001/showprofile',{
+      id: cookies.get("login")
+    }).then((response)=>{
+      if(response !== undefined){
+        // ini untuk bagian view profile
+        this.setState({fullname:response.data[0].full_name})
+        this.setState({skils:response.data[0].skils})
+        this.setState({image_profile:response.data[0].image_profile})
+      }
+    })
+
+
+    axios.get('http://localhost:3001/pagemail')
+    .then((ambilData) => {
+      if (ambilData !== undefined) {
+        var hasilblmread = 0
+        for (var i = 0; i < ambilData.data.length; i++) {
+          if (ambilData.data[i].view === "") {
+            hasilblmread++
+          }
+        }
+        this.setState({ read: hasilblmread })
+      }})
+
+  }
+
+  onSeriesInputChange = e =>{
+    var search = e.target.value
+    axios.post('http://localhost:3001/search/productall/' + search)
+    .then((ambilData) => {  
+      if(ambilData.data !== undefined){
+      this.setState({hasil: ambilData.data,})
+        // console.log(this.state.hasil)
+      }
+    })
+  }
+
   render() {
+
+    var data = this.state.hasil.map((item, index) => {
+      var id = item.id_product;
+      var nama_product = item.nama_product;
+      
+        return <div key={index}><Link  to={{ pathname: '/productall', state: { id: id } }}><i> {nama_product}</i></Link> <br/></div>
+    })
+
+
     return (
   <div>
 
@@ -35,58 +90,51 @@ class Navbaradmin extends Component {
     <header className="app-header"><Link className="app-header__logo" to="/homeadmin">Admin </Link>
       {/* <!-- Sidebar toggle button--> */}
 
-      <a className="d-md-none app-sidebar__toggle" href="#" data-toggle="sidebar" aria-label="Hide Sidebar" onClick={this.toggle}></a>
+      <span className="d-md-none app-sidebar__toggle" data-toggle="sidebar" aria-label="Hide Sidebar" onClick={this.toggle}></span>
       {/* <!-- Navbar Right Menu--> */}
+
+     
       <ul className="app-nav">
-        <li className="app-search">
-          <input className="app-search__input" type="search" placeholder="Search"/>
+            {/* Mengecek apakah berada di productall atau bukan */}
+            {this.props.productall ? "" : <li className="app-search">
+              <input type="text"
+                className="app-search__input"
+                placeholder="input something to search"
+                id="searchbar" data-toggle="dropdown" aria-haspopup="true"
+                value={this.state.masuk}
+                onInput={this.onSeriesInputChange}
+              /> &nbsp;
+
           <button className="app-search__button"><i className="fa fa-search"></i></button>
-        </li>
+              <div aria-label="Hide Sidebar" className="dropdown-menu">
+                {/* Awal dari looping */}
+                {data}
+                {/* Akhir dari looping */}
+              </div>
+            </li>}
+        
 
         {/* <!--Notification Menu--> */}
-        <li className="dropdown"><a className="app-nav__item" href="#" data-toggle="dropdown" aria-label="Show notifications"><i className="fa fa-bell-o fa-lg"></i></a>
-          <ul className="app-notification dropdown-menu dropdown-menu-right">
-            <li className="app-notification__title">You have 4 new notifications.</li>
+        <li className="dropdown"><span className="app-nav__item" data-toggle="dropdown" aria-label="Show notifications"><i className="fa fa-bell-o fa-lg">
+    {/* untuk mengecek apakah ada pesan baru atau tidak (email) */}
+        {this.state.read ? <span style={{color:"orange"}}> New</span> :""}
+        </i></span>
+     {/* untuk mengecek apakah ada pesan baru atau tidak (email) */}
+        {this.state.read ?<ul className="app-notification dropdown-menu dropdown-menu-right">
             <div className="app-notification__content">
-              <li><a className="app-notification__item" href="javascript:;"><span className="app-notification__icon"><span className="fa-stack fa-lg"><i className="fa fa-circle fa-stack-2x text-primary"></i><i className="fa fa-envelope fa-stack-1x fa-inverse"></i></span></span>
+              <li><Link to={{pathname: '/pagemail', state: {"view":"view"}}} className="app-notification__item"><span className="app-notification__icon"><span className="fa-stack fa-lg"><i className="fa fa-circle fa-stack-2x text-primary"></i><i className="fa fa-envelope fa-stack-1x fa-inverse"></i></span></span>
                   <div>
-                    <p className="app-notification__message">Lisa sent you a mail</p>
-                    <p className="app-notification__meta">2 min ago</p>
-                  </div></a></li>
-              <li><a className="app-notification__item" href="javascript:;"><span className="app-notification__icon"><span className="fa-stack fa-lg"><i className="fa fa-circle fa-stack-2x text-danger"></i><i className="fa fa-hdd-o fa-stack-1x fa-inverse"></i></span></span>
-                  <div>
-                    <p className="app-notification__message">Mail server not working</p>
-                    <p className="app-notification__meta">5 min ago</p>
-                  </div></a></li>
-              <li><a className="app-notification__item" href="javascript:;"><span className="app-notification__icon"><span className="fa-stack fa-lg"><i className="fa fa-circle fa-stack-2x text-success"></i><i className="fa fa-money fa-stack-1x fa-inverse"></i></span></span>
-                  <div>
-                    <p className="app-notification__message">Transaction complete</p>
-                    <p className="app-notification__meta">2 days ago</p>
-                  </div></a></li>
-              <div className="app-notification__content">
-                <li><a className="app-notification__item" href="javascript:;"><span className="app-notification__icon"><span className="fa-stack fa-lg"><i className="fa fa-circle fa-stack-2x text-primary"></i><i className="fa fa-envelope fa-stack-1x fa-inverse"></i></span></span>
-                    <div>
-                      <p className="app-notification__message">Lisa sent you a mail</p>
-                      <p className="app-notification__meta">2 min ago</p>
-                    </div></a></li>
-                <li><a className="app-notification__item" href="javascript:;"><span className="app-notification__icon"><span className="fa-stack fa-lg"><i className="fa fa-circle fa-stack-2x text-danger"></i><i className="fa fa-hdd-o fa-stack-1x fa-inverse"></i></span></span>
-                    <div>
-                      <p className="app-notification__message">Mail server not working</p>
-                      <p className="app-notification__meta">5 min ago</p>
-                    </div></a></li>
-                <li><a className="app-notification__item" href="javascript:;"><span className="app-notification__icon"><span className="fa-stack fa-lg"><i className="fa fa-circle fa-stack-2x text-success"></i><i className="fa fa-money fa-stack-1x fa-inverse"></i></span></span>
-                    <div>
-                      <p className="app-notification__message">Transaction complete</p>
-                      <p className="app-notification__meta">2 days ago</p>
-                    </div></a></li>
-              </div>
+                    <p className="app-notification__message">you have a mail</p>
+                    <p className="app-notification__meta">Click here for see</p>
+                  </div></Link></li>
             </div>
-            <li className="app-notification__footer"><a href="#">See all notifications.</a></li>
-          </ul>
+          </ul> : "" }
         </li>
+        {/* untuk notif */}
+
 
         {/* <!-- User Menu--> */}
-        <li className="dropdown"><a className="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i className="fa fa-user fa-lg"></i></a>
+        <li className="dropdown"><span className="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i className="fa fa-user fa-lg"></i></span>
           <ul className="dropdown-menu settings-menu dropdown-menu-right">
             <li><Link className={"dropdown-item"} to="/pageuser"><i className="fa fa-user fa-lg"></i> Profile</Link></li>
 
@@ -104,10 +152,10 @@ class Navbaradmin extends Component {
     <Collapse isOpen={this.state.collapse}>
     <aside className="app-sidebar">
       <div className="app-sidebar__user">
-      <img className="app-sidebar__user-avatar" src={"vendor/img/avatar/avatar1.jpg"} style={{width:"48px", height:"48px"}} alt="User Image"/>
+      <img alt='avatar' className="app-sidebar__user-avatar" src={`http://localhost:3001/image/user_admin/${this.state.image_profile}`} style={{width:"48px", height:"48px"}}/>
         <div>
-          <p className="app-sidebar__user-name">{this.props.username}</p>
-          <p className="app-sidebar__user-designation">Frontend Developer</p>
+    <p className="app-sidebar__user-name">{this.state.fullname}</p>
+          <p className="app-sidebar__user-designation">{this.state.skils}</p>
         </div>
       </div>
        
@@ -135,9 +183,15 @@ class Navbaradmin extends Component {
             <li><Link className={"app-menu__item " + this.props.orders} to="/orders">
             <i className="app-menu__icon fa fa-table"></i><span className="app-menu__label"> Orders</span></Link></li>
 
+            <li><Link className={"app-menu__item " + this.props.report} to="/report">
+            <i className="app-menu__icon fa fa-file"></i><span className="app-menu__label"> Report</span></Link></li>
+
+            <li><Link className={"app-menu__item " + this.props.front} to="/fronthome">
+            <i className="app-menu__icon fa fa-television"></i><span className="app-menu__label"> Front Home</span></Link></li>
+
             <li><Link className={"app-menu__item " + this.props.pagemail} to="/pagemail">
             <i className="app-menu__icon fa fa-envelope"></i>
-            <span class="app-menu__label"> Mailbox</span></Link></li>
+            <span className="app-menu__label"> Mailbox</span></Link></li>
 
         </ul>
     </aside>
@@ -149,4 +203,4 @@ class Navbaradmin extends Component {
   }
 }
 
-export default connect(mapStateToProps)(Navbaradmin);
+export default Navbaradmin;

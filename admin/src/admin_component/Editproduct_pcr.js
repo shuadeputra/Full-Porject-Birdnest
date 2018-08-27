@@ -2,19 +2,12 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom'
 import Navbaradmin from './Navbaradmin';
 import axios from 'axios';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
-
-// Mengirim funtion yang dapat dari redux
-function mapStateToProps(state) {
-  return {
-    login: state.login,
-    username: state.username,
-    userid: state.userid,
-    id_product: state.id_product
-  };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
 
 class Editproduct_pcr extends Component {
 
@@ -25,12 +18,13 @@ class Editproduct_pcr extends Component {
 
 
   componentDidMount() {
-    console.log(this.props.id_product)
+    var id = this.props.location.state.id
+    // console.log(this.props.id_product)
     axios.post('http://localhost:3001/product/img', {
-      id: this.props.id_product
+      id: id
     })
       .then((respone) => {
-        console.log(respone.data)
+        // console.log(respone.data)
         this.setState({ dataKu: respone.data })
       })
   }
@@ -41,14 +35,24 @@ class Editproduct_pcr extends Component {
     id: id,
     product_images: nama
    })
+
+   var id_product = this.props.location.state.id
+   // console.log(this.props.id_product)
+   axios.post('http://localhost:3001/product/img', {
+     id: id_product
+   })
+     .then((respone) => {
+       // console.log(respone.data)
+       this.setState({ dataKu: respone.data })
+     })
   }
 
   render() {
 
     // Mengecek apakah passwod sudah dan username uda benar?
-    if (this.props.login != 1) {
-      { this.state.redirect = true }
-      this.props.dispatch({ type: 'login', value: "Username /Password anda salah" });
+    if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+      cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+      this.setState({ redirect: true })
     }
 
     // Mengirm redirect jika pass dan user bukan dapat value 1
@@ -61,14 +65,14 @@ class Editproduct_pcr extends Component {
       var id = item.id;
       var product_id = item.product_id;
       var product_images = item.product_images;
-      return (
-        <tr>
-          <th><img key={index} src={'http://localhost:3001/'+ `image/${product_images}`} style={{ width: '150px', height: '150px' }} /></th>
-          <th key={index}>{product_id}</th>
-          <th key={index}>{product_images}</th>
-          <th key={index}><Link onClick={()=>{this.delete(id,product_images);}} className="btn btn-danger fa fa-trash" to='/productall'></Link></th>
+      return <tr key={index}>
+          <th>
+            <img alt="product_img" src={`http://localhost:3001/image/${product_images}`} style={{ width: '150px', height: '150px' }} />
+          </th>
+          <th>{product_id}</th>
+          <th>{product_images}</th>
+          <th><button onClick={()=>{this.delete(id,product_images);}} className="btn btn-danger fa fa-trash"></button></th>
         </tr>
-      )
     })
    
 
@@ -81,25 +85,25 @@ class Editproduct_pcr extends Component {
         <Navbaradmin product="active" />
 
 
-        <main class="app-content">
-          <div class="app-title">
+        <main className="app-content">
+          <div className="app-title">
             <div>
-              <h1><i class="fa fa-product-hunt"></i> Edit Product picture</h1><br />
-              <Link class="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link>
+              <h1><i className="fa fa-product-hunt"></i> Edit Product picture</h1><br />
+              <Link className="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link>
             </div>
-            <ul class="app-breadcrumb breadcrumb side">
-              <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
-              <li class="breadcrumb-item">Home</li>
-              <li class="breadcrumb-item"><Link to="/productall">Product</Link></li>
-              <li class="breadcrumb-item active">Add Product </li>
+            <ul className="app-breadcrumb breadcrumb side">
+              <li className="breadcrumb-item"><i className="fa fa-home fa-lg"></i></li>
+              <li className="breadcrumb-item">Home</li>
+              <li className="breadcrumb-item"><Link to="/productall">Product</Link></li>
+              <li className="breadcrumb-item active">Add Product </li>
             </ul>
           </div>
 
-          <div class="clearix"></div>
-          <div class="col-md-12">
-            <div class="tile">
-              <h3 class="tile-title">Edit Product Picture</h3>
-              <div class="tile-body">
+          <div className="clearix"></div>
+          <div className="col-md-12">
+            <div className="tile">
+              <h3 className="tile-title">Edit Product Picture</h3>
+              <div className="tile-body">
 
                 <table id="test" className="table table-hover table-bordered">
                   <thead>
@@ -127,4 +131,4 @@ class Editproduct_pcr extends Component {
   }
 }
 
-export default connect(mapStateToProps)(Editproduct_pcr);
+export default Editproduct_pcr;

@@ -8,6 +8,7 @@ import Content from './Content';
 class Home extends Component {
 
   render() {
+
     return (
   <div>
         <Navbar />

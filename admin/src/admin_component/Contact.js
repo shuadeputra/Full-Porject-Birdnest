@@ -1,26 +1,20 @@
 import React, { Component } from 'react';
 import Navbaradmin from './Navbaradmin';
 import axios from 'axios';
-import {Link} from 'react-router-dom';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 
-// Mengirim funtion yang dapat dari redux
-function mapStateToProps(state) {
-  return {
-      login: state.login,
-      username: state.username
-    };
-}
-
-
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
 
 class Contact extends Component {
 
   state ={
     dataKu: [],
-    redirect: false
+    redirect: false,
+    next:""
   }
 
   componentDidMount() {
@@ -40,7 +34,12 @@ class Contact extends Component {
         callcenter: obj.callcenter.value,
         address: obj.address.value
         
-      })
+      }).then((ambilData) => {
+        if(ambilData.data === "berhasil"){
+          this.setState({next: 1})
+          this.setState({ redirect: true })
+        }
+     })
     }
 
 
@@ -48,10 +47,16 @@ class Contact extends Component {
 
   render() {
 
+
   // Mengecek apakah passwod sudah dan username uda benar?
-  if(this.props.login != 1){
-    {this.state.redirect= true}  
-    this.props.dispatch({type:'login', value:"Username /Password anda salah"});    
+  if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+    cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+    this.setState({ redirect: true })
+  }
+
+  // pindah ke page yang ditujui
+  if(this.state.redirect && this.state.next === 1){
+    return <Redirect to="/homeadmin"/>
   }
 
   // Mengirm redirect jika pass dan user bukan dapat value 1
@@ -68,48 +73,40 @@ class Contact extends Component {
       var address = item.address; 
       var callcenter = item.callcenter; 
       var electronic_support = item.electronic_support; 
-      return( 
-        <div className="col-md-12">
+      return <div key={index} className="col-md-12">
         <div className="tile">
           <h3 className="tile-title">Contact</h3>
           <div className="tile-body">
-            <form className="row">
               <div className="form-group col-md-12">
                 <label className="control-label fa fa-map"> Address</label>
-                <textarea rows="1"  className="form-control" ref="address" type="text" key={index}>
-                  {address}
+                <textarea rows="1" defaultValue={address} className="form-control" ref="address" type="text">
                 </textarea>
               </div>
               <div className="form-group col-md-12">
                 <label className="control-label fa fa-address-book"> Call center</label>
-                <textarea rows="1"  className="form-control" ref="callcenter" type="text" key={index}>
-                {callcenter}
-                </textarea>
+                <textarea rows="1" defaultValue={callcenter} className="form-control" ref="callcenter" type="text">
+              </textarea>
               </div>
               <div className="form-group col-md-12">
                 <label className="control-label fa fa-envelope"> Electronic support</label>
-                <textarea id="electronic" rows="3" ref="elecronic" className="form-control" key={index}>
-                  {electronic_support}
+                <textarea id="electronic" defaultValue={electronic_support} rows="3" ref="elecronic" className="form-control">
               </textarea>
               </div>
   
             <div className="form-group col-md-12">
-              <label for="description">description</label>
-              <textarea id="description" rows="5" ref="description" className="form-control" key={index}> 
-                  {content}
+              <label>description</label>
+              <textarea id="description" defaultValue={content} rows="5" ref="description" className="form-control"> 
                   </textarea>
               </div>
 
-              <input hidden key={index} ref="id" type="text" value={id}/>
+              <input hidden ref="id" type="text" defaultValue={id}/>
 
               <div className="form-group col-md-4 align-self-end">
-                <Link  onClick={() => this.update(this.refs)} type="submit" to="/homeadmin" className="btn btn-primary" type="button"><i className="fa fa-fw fa-lg fa-save"></i>Save change</Link>
+                <button onClick={() => this.update(this.refs)} type="submit" className="btn btn-primary"><i className="fa fa-fw fa-lg fa-save"></i>Save change</button>
               </div>
-            </form>
           </div>
         </div>
       </div>
-      )
       })
 
 
@@ -145,4 +142,4 @@ class Contact extends Component {
   }
 }
 
-export default connect(mapStateToProps)(Contact);
+export default Contact;

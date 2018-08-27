@@ -2,18 +2,15 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom'
 import Navbaradmin from './Navbaradmin';
 import axios from 'axios';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 
-// Mengirim funtion yang dapat dari redux
-function mapStateToProps(state) {
-  return {
-      login: state.login,
-      username: state.username,
-      userid: state.userid,
-    };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
+
+var userid_admin = cookies.get("login")
 
 class Addproduct extends Component {
 
@@ -21,7 +18,9 @@ class Addproduct extends Component {
     redirect: false,
     show_category : [],
     show_measure : [],
-    show_condition : []
+    show_condition : [],
+    nextpage:'',
+    annoucement:""
   }
 
 
@@ -45,16 +44,13 @@ class Addproduct extends Component {
       .then((respone) => {
         this.setState({ show_condition: respone.data })
         // console.log(this.state.show_condition)
-      })
-
-
-      
+      })      
   }
 
 
   Addproduct =(obj) =>{
 
-    var self = this
+    if(obj.nama_product.value.length >=1 && obj.price.value.length >=1 && obj.description.value.length >=1 ){
     axios.post('http://localhost:3001/product/addproduct',
       {
         nama_product: obj.nama_product.value,
@@ -64,19 +60,31 @@ class Addproduct extends Component {
         condition: obj.condition.value,
         description: obj.description.value,
         Unit_measure: obj.Unit_measure.value,
-        useradmin_id: this.props.userid
-
+        useradmin_id: userid_admin
+      }).then((result) => {
+        if(result.data === "berhasil"){
+          this.setState({nextpage:"1"})
+            this.setState({redirect:true})
+        }
       })
+    } else{
+      this.setState({annoucement:"Please make sure your fill out all field"})
+    }
   }
 
 
   render() {
 
   // Mengecek apakah passwod sudah dan username uda benar?
-  if(this.props.login != 1){
-    {this.state.redirect= true}  
-    this.props.dispatch({type:'login', value:"Username /Password anda salah"});    
+  if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+    cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+    this.setState({ redirect: true })
   }
+
+
+    if (this.state.redirect && this.state.nextpage === "1") {
+      return <Redirect to='/productall'/>
+    }
 
   // Mengirm redirect jika pass dan user bukan dapat value 1
     if (this.state.redirect) {
@@ -115,76 +123,73 @@ class Addproduct extends Component {
         <Navbaradmin product="active" />
 
 
-        <main class="app-content">
-          <div class="app-title">
+        <main className="app-content">
+          <div className="app-title">
             <div>
-              <h1><i class="fa fa-product-hunt"></i> Add Product</h1><br />
-              <Link class="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link>
+              <h1><i className="fa fa-product-hunt"></i> Add Product</h1><br />
+              <Link className="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link>
             </div>
-            <ul class="app-breadcrumb breadcrumb side">
-              <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
-              <li class="breadcrumb-item">Home</li>
-              <li class="breadcrumb-item"><Link to="/productall">Product</Link></li>
-              <li class="breadcrumb-item active">Add Product </li>
+            <ul className="app-breadcrumb breadcrumb side">
+              <li className="breadcrumb-item"><i className="fa fa-home fa-lg"></i></li>
+              <li className="breadcrumb-item">Home</li>
+              <li className="breadcrumb-item"><Link to="/productall">Product</Link></li>
+              <li className="breadcrumb-item active">Add Product </li>
             </ul>
           </div>
 
-          <div class="clearix"></div>
-          <div class="col-md-12">
-            <div class="tile">
-              <h3 class="tile-title">Add Product</h3>
-              <div class="tile-body">
-              <form class="row">
-            <div class="form-group col-md-10">
-              <label class="control-label">Name Product</label>
-              <input ref="nama_product" class="form-control" type="text" placeholder="name product" required />
+          <div className="clearix"></div>
+          <div className="col-md-12">
+            <div className="tile">
+              <h3 className="tile-title">Add Product</h3>
+              <div className="tile-body row">
+            <div className="form-group col-md-10">
+              <label className="control-label">Name Product</label>
+              <input ref="nama_product" className="form-control" type="text" placeholder="name product" required  />
             </div>
-            <div class="form-group col-md-2 col-6">
-              <label class="control-label">Product Price</label>
-              <input ref="price" class="form-control" type="number" placeholder="price" required/>
+            <div className="form-group col-md-2 col-6">
+              <label className="control-label">Product Price</label>
+              <input ref="price" className="form-control" type="number" placeholder="price" required/>
             </div>
-            <div class="form-group col-md-2 col-6">
-              <label for="gender">Quantity </label>
-              <input ref="quantity" class="form-control" type="number" placeholder="Quantity" required/>
+            <div className="form-group col-md-2 col-6">
+              <label>Quantity </label>
+              <input ref="quantity" className="form-control" type="number" placeholder="Quantity" required/>
             </div>
 
-            <div class="form-group col-md-2 col-6">
-              <label for="gender">Unit of measure</label>
-              <select ref="Unit_measure" id="gender" class="form-control">
+            <div className="form-group col-md-2 col-6">
+              <label>Unit of measure</label>
+              <select ref="Unit_measure" id="gender" className="form-control">
               {/* Likasi looping unit_measure */}
                     {data2}
               {/* End of looping unit_measure */}
               </select>
             </div>              
-            <div class="form-group col-md-2 col-6">
-              <label for="gender">Categori </label>
-              <select ref="category" id="gender" class="form-control">
+            <div className="form-group col-md-2 col-6">
+              <label>Categori </label>
+              <select ref="category" id="gender" className="form-control">
               {/* Lokasi looping category*/}
                {data}
                {/* End of looping cateogry */}
               </select>
             </div>
-            <div class="form-group col-md-2 col-6">
-              <label for="gender">Condition </label>
-              <select ref="condition" id="gender" class="form-control">
+            <div className="form-group col-md-2 col-6">
+              <label>Condition </label>
+              <select ref="condition" id="gender" className="form-control">
               {/* Lokasi looping condition*/}
               {data3}
                {/* End of looping condition */}
               </select>
             </div>
 
-            <div class="form-group col-md-12">
-              <label for="message">description</label>
-              <textarea ref="description" id="message" rows="3" class="form-control" required></textarea>
+            <div className="form-group col-md-12">
+              <label>description</label>
+              <textarea ref="description" id="message" rows="3" className="form-control" required></textarea>
             </div>
 
-            <div class="form-group col-md-4 align-self-end">
-              <Link onClick={() => this.Addproduct(this.refs)} type="submit" to="/productall" class="btn btn-primary" type="button">
-              <i class="fa fa-fw fa-lg fa-save"></i>Save</Link>
-
-            </div>
-          </form>
-  
+          <div className="form-group col-md-4 align-self-end">
+          <p style={{color:"red"}}>{this.state.annoucement}</p>
+              <button onClick={() => this.Addproduct(this.refs)} type="submit" className="btn btn-primary">
+              <i className="fa fa-fw fa-lg fa-save"></i>Save</button>
+          </div>              
               </div>
             </div>
           </div>
@@ -196,4 +201,4 @@ class Addproduct extends Component {
   }
 }
 
-export default connect(mapStateToProps)(Addproduct);
+export default Addproduct;

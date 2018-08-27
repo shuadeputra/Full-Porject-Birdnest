@@ -2,19 +2,12 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom'
 import Navbaradmin from './Navbaradmin';
 import axios from 'axios';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
-
-// Mengirim funtion yang dapat dari redux
-function mapStateToProps(state) {
-  return {
-    login: state.login,
-    username: state.username,
-    userid: state.userid,
-    id_product: state.id_product
-  };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
 
 class category extends Component {
 
@@ -41,20 +34,16 @@ class category extends Component {
       axios.post('http://localhost:3001/product/category/delete',
         {
           id: id,
+        }).then((respone) => {
+          if(respone.data === "berhasil"){
+            axios.get('http://localhost:3001/product/show_category', {
+            })
+              .then((respone) => {
+                this.setState({ dataKu: respone.data })
+              })
+          }
         })
     }
-  }
-
-  editcategory(id){
-    this.props.dispatch({type:'product_picture', 
-    id: id,
-    value:this.props.login,
-    value2:this.props.username,
-    userid_number:this.props.userid
-    })
-    
-    // console.log(id);
-
   }
   
 
@@ -62,9 +51,9 @@ class category extends Component {
   render() {
 
     // Mengecek apakah passwod sudah dan username uda benar?
-    if (this.props.login != 1) {
-      { this.state.redirect = true }
-      this.props.dispatch({ type: 'login', value: "Username /Password anda salah" });
+    if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+      cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+      this.setState({ redirect: true })
     }
 
     // Mengirm redirect jika pass dan user bukan dapat value 1
@@ -77,17 +66,14 @@ class category extends Component {
       var id = item.id;
       var number = index + 1
       var nama_category = item.nama_category;
-      return (
-        <tr>
-          <th key={index}>{number}</th>
+      return <tr key={index}>
+          <th>{number}</th>
           <th>{nama_category}</th>
           <th>
-        <Link onClick={() => { this.editcategory(id); }} className="btn btn-warning fa fa-pencil" to="/editcategory"></Link> &nbsp;
-        <Link onClick={() => { this.delete(id); }} className="btn btn-danger fa fa-trash" to='/productall'></Link>
-
+        <Link to={{pathname: '/editcategory', state: {id:id}}} className="btn btn-warning fa fa-pencil"></Link> &nbsp;
+        <button onClick={() => { this.delete(id); }} className="btn btn-danger fa fa-trash"></button>
           </th>
         </tr>
-      )
     })
 
 
@@ -100,26 +86,26 @@ class category extends Component {
         <Navbaradmin product="active" />
 
 
-        <main class="app-content">
-          <div class="app-title">
+        <main className="app-content">
+          <div className="app-title">
             <div>
-              <h1><i class="fa fa-shopping-basket"></i> Product Category</h1><br />
-              <Link class="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link> &nbsp;&nbsp;
-              <Link class="btn btn-success btn-sm fa fa-plus" to="/addcategory"> Add Category </Link>
+              <h1><i className="fa fa-shopping-basket"></i> Product Category</h1><br />
+              <Link className="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link> &nbsp;&nbsp;
+              <Link className="btn btn-success btn-sm fa fa-plus" to="/addcategory"> Product Category </Link>
             </div>
-            <ul class="app-breadcrumb breadcrumb side">
-              <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
-              <li class="breadcrumb-item">Home</li>
-              <li class="breadcrumb-item"><Link to="/productall">Product</Link></li>
-              <li class="breadcrumb-item active">Add Product </li>
+            <ul className="app-breadcrumb breadcrumb side">
+              <li className="breadcrumb-item"><i className="fa fa-home fa-lg"></i></li>
+              <li className="breadcrumb-item">Home</li>
+              <li className="breadcrumb-item"><Link to="/productall">Product</Link></li>
+              <li className="breadcrumb-item active">Product Category </li>
             </ul>
           </div>
 
-          <div class="clearix"></div>
-          <div class="col-md-12">
-            <div class="tile">
-              <h3 class="tile-title">Category</h3>
-              <div class="tile-body">
+          <div className="clearix"></div>
+          <div className="col-md-12">
+            <div className="tile">
+              <h3 className="tile-title">Category</h3>
+              <div className="tile-body">
 
                 <table id="test" className="table table-hover table-bordered">
                   <thead>
@@ -148,4 +134,4 @@ class category extends Component {
   }
 }
 
-export default connect(mapStateToProps)(category);
+export default category;

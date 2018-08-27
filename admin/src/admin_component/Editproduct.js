@@ -2,18 +2,14 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom'
 import Navbaradmin from './Navbaradmin';
 import axios from 'axios';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 
-function mapStateToProps(state) {
-  return {
-    login: state.login,
-    username: state.username,
-    userid: state.userid,
-    id_product: state.id_product
-  };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
+
 
 class Editproduct extends Component {
 
@@ -23,21 +19,21 @@ class Editproduct extends Component {
     show_category:[],
     show_measure : [],
     show_condition : [],
-    ideditproduct:[],
-    idmeasureproduct:[],
-    idconditionproduct:[],
+    next:false,
   }
 
   componentDidMount() {
+
+    var id = this.props.location.state.id
     axios.post('http://localhost:3001/product/editproduct', {
-      id: this.props.id_product
+      id: id
     })
       .then((respone) => {
         // console.log(respone.data)
+        if(respone.data !== undefined){
         this.setState({ dataKu: respone.data })
-        this.setState({ ideditproduct: respone.data[0].category_id})
-        this.setState({ idmeasureproduct: respone.data[0].Unit_measure_id})
-        this.setState({ idconditionproduct: respone.data[0].condition_id})
+      }
+
       })
   
   // untuk show all product category 
@@ -68,7 +64,7 @@ class Editproduct extends Component {
 
 Edit(obj,id){
 
-  var self = this
+  // var self = this
   axios.post('http://localhost:3001/product/editproduct/update',
     {
   nama_product: obj.nama_product.value,
@@ -78,8 +74,12 @@ Edit(obj,id){
   condition: obj.condition.value,
   description: obj.description.value,
   Unit_measure: obj.Unit_measure.value,
-  useradmin_id: this.props.userid,
+  useradmin_id: cookies.get("login"),
   id:id
+    }).then((respone)=>{
+      if(respone.data === "berhasil"){
+        this.setState({next:true})
+      }
     })
 }
 
@@ -87,15 +87,10 @@ Edit(obj,id){
 
   render() {
     
-    // id category dari table product
-    var id_category = this.state.ideditproduct
-    var id_measure = this.state.idmeasureproduct
-    var id_condition = this.state.idconditionproduct
-
     // Mengecek apakah passwod sudah dan username uda benar?
-    if (this.props.login != 1) {
-      { this.state.redirect = true }
-      this.props.dispatch({ type: 'login', value: "Username /Password anda salah" });
+    if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+      cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+      this.setState({ redirect: true })
     }
 
     // Mengirm redirect jika pass dan user bukan dapat value 1
@@ -103,54 +98,34 @@ Edit(obj,id){
       return <Redirect to='/' />
     }
 
+    // Jika sudah melakukan edit maka akan menuju ke
+    if (this.state.next) {
+      return <Redirect to='/productall' />
+    }
+
   // Looping dari get product show category
   const data2 = this.state.show_category.map((item, index) => {
     var id = item.id
     var category_name = item.nama_category;
-    var selected;
 
-    // test untuk selected category yang bakal kita coba
-    if (id == id_category){
-      selected = 'selected';
-    }
-    else{
-      selected = '';
-    }
-    return (
-          <option key={index} value={id} selected={selected}>{category_name}</option>            
-    )})
+      return <option key={index} value={id}>{category_name}</option>           
+    })
 
 
   // Awal mulainya looping show measure
-        const data3 = this.state.show_measure.map((item, index) => {
-          var id = item.id
-          var name_measure = item.name_measure;
-          var selected;
-          if (id == id_measure){
-            selected = 'selected';
-          }
-          else{
-            selected = '';
-          }
-          return (
-                <option key={index} value={id} selected={selected}>{name_measure}</option>            
-          )})
+    const data3 = this.state.show_measure.map((item, index) => {
+      var id = item.id
+      var name_measure = item.name_measure;
+        return <option key={index} value={id}>{name_measure}</option>
+    })
 
-  // Awal mulainya looping show condition
-        const data4 = this.state.show_condition.map((item, index) => {
-          var id = item.id
-          var nama_condition = item.nama_condition;
-          var selected;
-          if (id == id_condition){
-            selected = 'selected';
-          }
-          else{
-            selected = '';
-          }
-          return (
-                <option key={index} value={id} selected={selected}>{nama_condition}</option>            
-          )})
+    // Awal mulainya looping show condition
+    const data4 = this.state.show_condition.map((item, index) => {
+      var id = item.id
+      var nama_condition = item.nama_condition;
 
+        return <option key={index} value={id}>{nama_condition}</option>
+    })
 
     // Awal mulainya looping dari post product edit
     const data = this.state.dataKu.map((item, index) => {
@@ -158,63 +133,65 @@ Edit(obj,id){
       var nama_product = item.nama_product;
       var price = item.price;
       var quantity = item.quantity;
-      var category = item.nama_category;
-      var condition = item.condition;
+      var category = item.category_id;
+      var condition = item.condition_id;
       var description = item.description;
-      var Unit_measure = item.Unit_measure;
-      return (
-        <form class="row">
-          <div class="form-group col-md-10">
-            <label class="control-label">Name Product</label>
-            <input key={index} ref="nama_product" rows="1" className="form-control" type="text" placeholder="name product" Value={nama_product} required/>
+      var Unit_measure = item.Unit_measure_id;
+
+      return <div key={index} className="row">
+          <div key={index} className="form-group col-md-10">
+            <label className="control-label">Name Product</label>
+            <input ref="nama_product" rows="1" className="form-control" type="text" placeholder="name product" defaultValue={nama_product} required/>
           </div>
-          <div class="form-group col-md-2 col-6">
-            <label class="control-label">Product Price</label>
-            <input key={index} ref="price" rows="1" class="form-control" type="number" placeholder="price" Value={price} required/>
+          <div className="form-group col-md-2 col-6">
+            <label className="control-label">Product Price</label>
+            <input ref="price" rows="1" className="form-control" type="number" placeholder="price" defaultValue={price} required/>
           </div>
-          <div class="form-group col-md-2 col-6">
-            <label for="quantity">Quantity </label>
-            <input key={index} ref="quantity" class="form-control" type="number" placeholder="Quantity"  Value={quantity} required/>
+          <div className="form-group col-md-2 col-6">
+            <label>Quantity </label>
+            <input ref="quantity" className="form-control" type="number" placeholder="Quantity"  defaultValue={quantity} required/>
           </div>  
-          <div class="form-group col-md-2 col-6">
-            <label for="measure">Unit of measure</label>
-            <select ref="Unit_measure" id="measure" class="form-control">
+          <div className="form-group col-md-2 col-6">
+            <label>Unit of measure</label>
+            <select ref="Unit_measure" id="measure" className="form-control" 
+            defaultValue={Unit_measure}>
               {/* Loopingnya di categori */}
               {data3}
+              {/* <option value="Boy">Boy</option>
+              <option value="Girl">Girl</option> */}
               {/* End looping categori */}
             </select>
           </div>            
-          <div class="form-group col-md-2 col-6">
-            <label for="categori">Categori </label>
-            <select ref="category" id="category" class="form-control">
+          <div className="form-group col-md-3 col-6">
+            <label>Categori </label>
+            <select ref="category" id="category" className="form-control" 
+            defaultValue={category}>
               {/* Loopingnya di categori */}
               {data2}
               {/* End looping categori */}
             </select>
           </div>
-          <div class="form-group col-md-2 col-6">
-            <label for="condition">Condition </label>
-            <select ref="condition" id="gender" class="form-control">
+          <div className="form-group col-md-2 col-6">
+            <label>Condition </label>
+            <select ref="condition" id="gender" className="form-control" 
+            defaultValue={condition}>
              {/* Loopingnya di categori */}
              {data4}
               {/* End looping categori */}
             </select>
           </div>
 
-          <div class="form-group col-md-12">
-            <label for="message">description</label>
-            <textarea key={index} ref="description" id="message" rows="3" class="form-control" required>
-            {description}
+          <div className="form-group col-md-12">
+            <label >description</label>
+            <textarea ref="description" id="message" defaultValue={description} rows="3" className="form-control" required>
             </textarea>
           </div>
 
-          <div class="form-group col-md-4 align-self-end">
-            <Link onClick={() => this.Edit(this.refs,id)} type="submit" to="/homeadmin" class="btn btn-primary" type="button">
-              <i class="fa fa-fw fa-lg fa-save"></i>Save</Link>
-
+          <div className="form-group col-md-4 align-self-end">
+            <button onClick={() => this.Edit(this.refs,id)} type="submit" className="btn btn-primary">
+              <i className="fa fa-fw fa-lg fa-save"></i>Save</button>
           </div>
-          </form>
-      )
+      </div>
     })
 
 
@@ -225,25 +202,25 @@ Edit(obj,id){
         <Navbaradmin product="active" />
 
 
-        <main class="app-content">
-          <div class="app-title">
+        <main className="app-content">
+          <div className="app-title">
             <div>
-              <h1><i class="fa fa-product-hunt"></i> Edit Product</h1><br />
-              <Link class="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link>
+              <h1><i className="fa fa-product-hunt"></i> Edit Product</h1><br />
+              <Link className="btn btn-secondary btn-sm fa fa-arrow-left" to="/productall"> Back </Link>
             </div>
-            <ul class="app-breadcrumb breadcrumb side">
-              <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
-              <li class="breadcrumb-item">Home</li>
-              <li class="breadcrumb-item"><Link to="/productall">Product</Link></li>
-              <li class="breadcrumb-item active"> Edit Product </li>
+            <ul className="app-breadcrumb breadcrumb side">
+              <li className="breadcrumb-item"><i className="fa fa-home fa-lg"></i></li>
+              <li className="breadcrumb-item">Home</li>
+              <li className="breadcrumb-item"><Link to="/productall">Product</Link></li>
+              <li className="breadcrumb-item active"> Edit Product </li>
             </ul>
           </div>
 
-          <div class="clearix"></div>
-          <div class="col-md-12">
-            <div class="tile">
-              <h3 class="tile-title">Edit Product</h3>
-              <div class="tile-body">
+          <div className="clearix"></div>
+          <div className="col-md-12">
+            <div className="tile">
+              <h3 className="tile-title">Edit Product</h3>
+              <div className="tile-body">
                
                   {/* Looping di mulai */}
                       {data}
@@ -258,4 +235,4 @@ Edit(obj,id){
   }
 }
 
-export default connect(mapStateToProps)(Editproduct);
+export default Editproduct;

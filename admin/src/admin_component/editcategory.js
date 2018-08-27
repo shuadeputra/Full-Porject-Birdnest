@@ -2,39 +2,33 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom'
 import Navbaradmin from './Navbaradmin';
 import axios from 'axios';
-import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 
-// Mengirim funtion yang dapat dari redux
-function mapStateToProps(state) {
-  return {
-    login: state.login,
-    username: state.username,
-    userid: state.userid,
-    id: state.id_product
-  };
-}
+// untuk menjalankan cookies
+const cookies = new Cookies();
+// untuk menjalankan cookies
 
 class editcategory extends Component {
 
   state = {
     redirect: false,
-    nama_category: [],
-    category_id:[]
+    dataKu:[],
+    nextpage:""
   }
 
 
   componentDidMount() {
-    // console.log(this.props.id)
+    var id = this.props.location.state.id
     var self = this
     axios.post('http://localhost:3001/product/show_categorybyid',
       {
-        id: this.props.id,
+        id: id,
       }).then((respone) => {
-        self.setState({ nama_category: respone.data[0].nama_category, category_id: respone.data[0].id })
-        // console.log(this.state.nama_category)
-        // console.log(this.state.category_id)
+        if(respone !== undefined){
+          self.setState({dataKu:respone.data})
+          }
       })
 
   }
@@ -45,7 +39,12 @@ class editcategory extends Component {
     axios.post('http://localhost:3001/product/category/edit',
       {
         nama_category: obj.nama_category.value,
-        id: this.props.id
+        id: this.props.location.state.id
+      }).then((respone) => {
+        if(respone.data === "berhasil"){
+          this.setState({nextpage: 1})
+          this.setState({ redirect: true })
+        }
       })
   }
 
@@ -53,9 +52,14 @@ class editcategory extends Component {
   render() {
 
     // Mengecek apakah passwod sudah dan username uda benar?
-    if (this.props.login != 1) {
-      { this.state.redirect = true }
-      this.props.dispatch({ type: 'login', value: "Username /Password anda salah" });
+    if (cookies.get("login") === undefined || cookies.get("login") === "gagal" || cookies.get("login") < 1) {
+      cookies.set('pesan', "Username /Password anda salah", { path: '/' });
+      this.setState({ redirect: true })
+    }
+
+    // mengirim pindah page ketikah berhasil
+    if(this.state.redirect && this.state.nextpage === 1){
+      return <Redirect to="/category"/>
     }
 
     // Mengirm redirect jika pass dan user bukan dapat value 1
@@ -63,45 +67,49 @@ class editcategory extends Component {
       return <Redirect to='/' />
     }
 
+    // looping dari data di atas
+    const data = this.state.dataKu.map((item, index) => {
+      var nama_category = item.nama_category;
+      return <input key={index} ref="nama_category" className="form-control" type="text" placeholder="Category Name" defaultValue={nama_category} required />
+    })
+
     return (
       <div>
         {/* Bagian navbar admin */}
         <Navbaradmin product="active" />
 
-
-        <main class="app-content">
-          <div class="app-title">
+        <main className="app-content">
+          <div className="app-title">
             <div>
-              <h1><i class="fa fa-shopping-basket"></i> Add Product Category</h1><br />
-              <Link class="btn btn-secondary btn-sm fa fa-arrow-left" to="/category"> Back </Link>
+              <h1><i className="fa fa-shopping-basket"></i> Add Product Category</h1><br />
+              <Link className="btn btn-secondary btn-sm fa fa-arrow-left" to="/category"> Back </Link>
             </div>
-            <ul class="app-breadcrumb breadcrumb side">
-              <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
-              <li class="breadcrumb-item">Home</li>
-              <li class="breadcrumb-item"><Link to="/productall">Product</Link></li>
-              <li class="breadcrumb-item"><Link to="/category">Product Category</Link></li>
-              <li class="breadcrumb-item active">Add Category </li>
+            <ul className="app-breadcrumb breadcrumb side">
+              <li className="breadcrumb-item"><i className="fa fa-home fa-lg"></i></li>
+              <li className="breadcrumb-item">Home</li>
+              <li className="breadcrumb-item"><Link to="/productall">Product</Link></li>
+              <li className="breadcrumb-item"><Link to="/category">Product Category</Link></li>
+              <li className="breadcrumb-item active">Add Category </li>
             </ul>
           </div>
 
-          <div class="clearix"></div>
-          <div class="col-md-12">
-            <div class="tile">
-              <h3 class="tile-title">Add Product Catagory</h3>
-              <div class="tile-body">
-                <form class="row">
-                  <div class="form-group col-md-10">
-                    <label class="control-label">Category Name</label>
-                    <input ref="nama_category" class="form-control" type="text" placeholder="Category Name" Value={this.state.nama_category} required  />
+          <div className="clearix"></div>
+          <div className="col-md-12">
+            <div className="tile">
+              <h3 className="tile-title">Edit Product Catagory</h3>
+              <div className="tile-body">
+                  <div className="form-group col-md-10">
+                    <label className="control-label">Category Name</label>
+                  {/* looping data */}
+                    {data}
                   </div>
 
-                  <div class="form-group col-md-4 align-self-end">
-                    <Link onClick={() => this.Addcategory(this.refs)} type="submit" to="/productall" class="btn btn-primary" type="button">
-                      <i class="fa fa-fw fa-lg fa-save"></i>Save</Link>
+                  <div className="form-group col-md-4 align-self-end">
+                    <button onClick={() => this.Addcategory(this.refs)} 
+                     className="btn btn-primary">
+                      <i className="fa fa-fw fa-lg fa-save"></i>Save</button>
 
                   </div>
-                </form>
-
               </div>
             </div>
           </div>
@@ -113,4 +121,4 @@ class editcategory extends Component {
   }
 }
 
-export default connect(mapStateToProps)(editcategory);
+export default editcategory;
