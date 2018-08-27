@@ -149,7 +149,7 @@
       })
     }
 
-    // Pagging nation for invoice
+    // Pagging for invoice
     else if (req.query.page != undefined) {
 
       var LIMIT = req.query.page
@@ -160,7 +160,7 @@
       })
     }
     else {
-
+      //// untuk tampilan angka invoce ada seberapa
       var sql = 'SELECT id FROM invoice';
       db.query(sql, (err, result) => {
         if (err) throw err;
@@ -199,8 +199,23 @@
     });
   })
 
+  // untuk menampilkan customer street ditel
+app.post('/order_detail/address_customer', function (req, res) {
 
-  // untuk filter 
+  var invoice_number = req.body.invoice_number;
+
+  var sql = 'SELECT * FROM `invoice` WHERE `invoice_number`=?';
+  db.query(sql,invoice_number, (err, result) => {
+    if (err) throw err;
+    if(result != undefined){
+      res.send(result);
+    }
+  });
+
+})
+
+
+  // untuk filter (status) -> pagination
   app.post('/invoice/filter', function (req, res) {
     if (req.query.awal == 1) {
       var status = req.body.status
@@ -232,7 +247,7 @@
     }
   })
 
-  /////// untuk filter pay
+  /////// untuk filter pay (confirmation (pembayaran))-> paging
   app.post('/invoice/filterpay', function (req, res) {
     if (req.query.awal == 1) {
       var confirmation = req.body.confirmation
@@ -268,6 +283,7 @@
 
   ///////////////////// filter with filter pay /////////////////////
 
+  /// untuk dua kondisi confirmation dan dengan status apa ->paging
   app.post('/invoice/filterpay&statusfilter', function (req, res) {
     if (req.query.awal == 1) {
       var confirmation = req.body.confirmation
@@ -832,18 +848,6 @@ app.get('/product/condition', function (req, res) {
 app.post('/blog/addblog', function (req, res) {
 
   var userfile = req.files.file
-  // var description = req.body.description
-  // var meta_tittle = req.body.meta_tittle
-  // var meta_dsc = req.body.meta_dsc
-  // var title = req.body.title
-  // var useradmin_id = req.body.useradmin_id
-
-  // console.log(userfile)
-  // console.log(description)
-  // console.log(meta_tittle)
-  // console.log(meta_dsc) 
-  // console.log(title)
-  // console.log(useradmin_id)
   
   // membuat sembuah variable supaya file yang di upload bisa sama namanya
   var namafileuniq = uniqid();

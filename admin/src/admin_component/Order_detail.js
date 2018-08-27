@@ -14,6 +14,11 @@ class Order_detail extends Component {
   state = {
     redirect: false,
     datadapat: [],
+    Street: "",
+    ZIP:"",
+    City:"",
+    Contry:"",
+    Phone_number:""
   }
 
   componentDidMount(){
@@ -24,7 +29,19 @@ class Order_detail extends Component {
         invoice_number: invoice_number,
     }).then((respone) => {
       self.setState({ datadapat: respone.data, })
-    }) 
+    })
+    
+    axios.post("http://localhost:3001/order_detail/address_customer",{
+      invoice_number: invoice_number,
+    }).then((respone)=>{
+      self.setState({
+        Street : respone.data[0].Street,
+        ZIP: respone.data[0].ZIP,
+        City: respone.data[0].City,
+        Contry: respone.data[0].Contry,
+        Phone_number: respone.data[0].Phone_Number
+      })
+    })
   }
 
   render() {
@@ -93,6 +110,13 @@ class Order_detail extends Component {
               <form className="row">
                 {data}
               </form>
+              <center>
+                <h4>Street : {this.state.Street}</h4>
+                <h4>ZIP : {this.state.ZIP}</h4>
+                <h4>City : {this.state.City}</h4>
+                <h4>Contry : {this.state.Contry}</h4>
+                <h4>Phone_number : {this.state.Phone_number}</h4>
+              </center>
             </div>
           </div>
         </div>
